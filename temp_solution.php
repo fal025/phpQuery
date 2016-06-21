@@ -9,6 +9,9 @@
 
 <?php
 
+    //set the cookie for the website
+    setcookie("queryCookie", "", time()+3600, '/', IRCT_REST_BASE_URL);
+
     // set base url
     const IRCT_REST_BASE_URL = 'http://bd2k-picsure.hms.harvard.edu/';
 
@@ -33,7 +36,7 @@
 
     // get results
     const IRCT_GET_JSON_RESULTS_URL = IRCT_RESULTS_BASE_URL . 'download/json';
-
+    
     // start a conversation
     $response = file(IRCT_START_QUERY_URL);  //same as GET()
     $conversationId = strchr($response[0],"\"cid\"");
@@ -68,30 +71,31 @@
     {
         function __construct($field, $logicalOperator, $predicate)
         {
-		$whereParameterList =
-		array('type'=>'where', 'field'=>$field,
-			'logicalOperator'=>$logicalOperator,
-			'predicate'=>$predicate, 'data_encounter'=>'No',
-			'cid'=>$conversationId);
-		$query = http_build_query($whereParameterList);
-		$response = 
-		file_get_contents(IRCT_WHERE_QUERY_URL . '?' . $query);
-	}
+            $whereParameterList =
+            array('type'=>'where', 'field'=>$field,
+                'logicalOperator'=>$logicalOperator,
+                'predicate'=>$predicate, 'data_encounter'=>'No',
+                'cid'=>$conversationId);
+            $query = http_build_query($whereParameterList);
+            $response = 
+            file_get_contents(IRCT_WHERE_QUERY_URL . '?' . $query);
+        }
     }
 
     class selectNode
     {
-	function __construct($field, $alias)
-	{
-	    $selectParameterList = 
-	    array('type'=>'select', 'field'=>$field,'alias'=>$alias,'cid'=>
-	    $conversationId);
-	    $query = http_build_query($selectParameterList);
-	    $response = 
-	    file_get_contents(IRCT_SELECT_QUERY_URL . '?' . $query);
-	}
+        function __construct($field, $alias)
+        {
+            $selectParameterList = 
+            array('type'=>'select', 'field'=>$field,'alias'=>$alias,'cid'=>
+            $conversationId);
+            $query = http_build_query($selectParameterList);
+            $response = 
+            file_get_contents(IRCT_SELECT_QUERY_URL . '?' . $query);
+        }
     }
 
+    
     // run the full query and store the result Id
     $runQueryList = array('cid'=>$conversationId);
     $query = http_build_query($runQueryList);
