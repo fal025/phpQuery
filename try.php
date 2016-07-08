@@ -136,20 +136,26 @@
     }
     
     new whereNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/white/",
+        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/",
         "AND", "CONTAINS", $conversationId, $curl_session);
+    /*new whereNode(
+        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/black/",
+        "OR", "CONTAINS", $conversationId, $curl_session);*/
     new selectNode(
         "NHANES Public/Public Studies///NHANES/NHANES/demographics/AGE/",
         "AGE", $conversationId, $curl_session);
-    new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/",
-        "AGE", $conversationId, $curl_session);
-    new selectNode(
+    /*new selectNode(
         "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean diastolic/",
         "AGE", $conversationId, $curl_session);
     new selectNode(
         "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean systolic/",
-        "AGE", $conversationId, $curl_session);
+        "AGE", $conversationId, $curl_session);*/
+
+    /*new selectNode(
+        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/60 sec HR(30 sec HR*2)/",
+        "BLOODPRESSURE", $conversationId, $curl_session);*/
+
+
     // run the full query and store the result Id
     $runQueryList = array('cid'=>$conversationId);
     $query = http_build_query($runQueryList);
@@ -180,7 +186,10 @@
     {
         $patientId[$i] = intval($results[$i]["PATIENT_NUM"]);
     }
-    //var_dump($patientId);
+    sort($patientId,SORT_NUMERIC);
+    var_dump($patientId);
+    echo $patientId[0];
+
 
     return $patientId;
 ?>
