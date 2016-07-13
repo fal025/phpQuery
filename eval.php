@@ -251,6 +251,7 @@ $allId = [477974,
 453707, 482508, 484959, 481708, 481709, 490537, 490534, 490532, 490530, 462293, 
 467339, 484090, 483267, 492698, 456028, 471538, 483260, 456676, 479701, 479700, 
 473024, 479702, 476502];
+
     class Variable
     {
         public $type;
@@ -262,6 +263,8 @@ $allId = [477974,
             $this->type = $type;
             $this->operator = $operator;
             $this->value = $value;
+            if($type != "Gender" && $type != "Race")
+                $this->value = intval($value);
         }
     }
     
@@ -306,6 +309,20 @@ $allId = [477974,
 
     // get results
     const IRCT_GET_JSON_RESULTS_URL = IRCT_RESULTS_BASE_URL . 'download/json';
+
+    //consts for clauses
+    const temp____ = 'NHANES Public/Public Studies///NHANES';
+    const RACE = '/NHANES/demographics/RACE/';
+    const GENDER = '/NHANES/demographics/SEX/';
+    const AGE = '/NHANES/demographics/AGE/';
+    const MEAN_DIASTOLIC = '/NHANES/examination/blood pressure/mean diastolic/';
+    const MEAN_SYSTOLIC = '/NHANES/examination/blood pressure/mean systolic/';
+    const BMI = 'NHANES/examination/body measures/Body Mass Index(kg/m**2)/';
+    const STANDING_HEIGHT = '/NHANES/examination/body measures/Standing Height(cm)/';
+    const WEIGHT = '/NHANES/examination/body measures/Weight (kg)/';
+    const GLUCOSE_SERUM = '/NHANES/laboratory/biochemistry/Glucose, serum(mg/dL)/';
+    const URIC_ACID = '/NHANES/laboratory/biochemistry/Uric acid(mg/dL)/';
+    const TOTAL_CHOLESTEROL = '/NHANES/laboratory/biochemistry/Total Cholesterol(mg/dL)/';
     
     //function that help to chop the id conversation id from string
     function chopToId($conversationId_)
@@ -345,6 +362,94 @@ $allId = [477974,
         return $sum;        
     }
 
+    // function that returns a list of patients whose info on certain type matches
+    // the requirement (eg. age, mean diastolic...)
+    function getPatient_Info($results, $type, $operator, $value)
+    {
+        $myList = [];
+        // replace all '/' to '\'
+	    $type = str_replace('/', '\\', $type);
+	    
+        for ($i = 0; $i < count($results); $i++)
+        {
+            if ($type == RACE)
+	        {
+		        foreach (RACE_ARRAY as $value)
+		        {
+		            if ($results[$i][$type . $value] != NULL)
+		            {
+		                $type = $type . $value;
+			            break;
+		            }
+		        }
+	        }
+	        if ($type == GENDER)
+	        {
+		        foreach (GENDER_ARRAY as $value)
+		        {
+		            if ($results[$i][$type . $value] != NULL)
+		            {
+		                $type = $type . $value;
+			        break;
+		            }
+		        }
+	        }
+                // for greater than condition
+            if ($operator == '>')
+            {
+                if (intval($results[$i][$type]) > $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+            
+            // for greater than or equal to
+            else if ($operator == '>=')
+            {
+                if (intval($results[$i][$type]) >= $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+            
+            // for less than
+            else if ($operator == '<')
+            {
+                if (intval($results[$i][$type]) < $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+            
+            // for less than or equal to
+            else if ($operator == '<=')
+            {
+                if (intval($results[$i][$type]) <= $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+            
+            // for not equal to
+            else if ($operator == '!=')
+            {
+                if (intval($results[$i][$type]) != $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+            
+            // for equal to
+            else if ($operator == '=')
+            {
+                if (intval($results[$i][$type]) == $value)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+            }
+        }
+        return $myList;
+    }    
     // start a conversation
     $curl_session = curl_init(IRCT_START_QUERY_URL);
     curl_setopt($curl_session, CURLOPT_VERBOSE, 1);
@@ -390,7 +495,7 @@ $allId = [477974,
             curl_setopt($curl_session, CURLOPT_URL, 
                 IRCT_SELECT_QUERY_URL . '?' . $query);
             $response = curl_exec($curl_session);
-        }
+        }    
     }
 
 
@@ -400,7 +505,8 @@ $allId = [477974,
 
 
 
-    sort($allId)
+    sort($allId);
+    
     $parsedString = "";
     if(!isset($_SERVER['QUERY_STRING']))
         goto end;
@@ -436,7 +542,6 @@ $allId = [477974,
     $index = 0;
     var_dump($parsedString);
        // goto end;
-    echo "\n";
     while($index < strlen($parsedString))
     {
         if(substr($parsedString,$index,1) == ' ')
@@ -452,6 +557,7 @@ $allId = [477974,
         }
         else if(substr($parsedString,$index,1) == ')')
         {
+            //var_dump($stack2);
             while(sizeof($stack2) != 0)
             {
                 //echo 1;
@@ -474,6 +580,13 @@ $allId = [477974,
 
             //solving operator and variable
             $tempOperator;
+            $hasDot = false;
+            $countSpace = 0;
+            $countQuote = 0;
+            $tempVarType = "";
+            $tempVarOperator = "";
+            $tempVarVal = "";
+
             if(substr($parsedString,$index,3) == "NOT")
             {
                 $tempOperator = new Operator("!");
@@ -494,12 +607,6 @@ $allId = [477974,
 
                 //variable will be parsed here
                 //will continue looping after finish parsing this
-                $hasDot = false;
-                $countSpace = 0;
-                $countQuote = 0;
-                $tempVarType = "";
-                $tempVarOperator = "";
-                $tempVarVal = "";
 
                 while($countQuote < 2)
                 {
@@ -560,10 +667,13 @@ $allId = [477974,
                     }
 
                 }
-                $tempVar = new Variable($tempVarType,
-                    $tempVarOperator,$tempVarVal);
+                if(strlen($tempVarType) != 0)
+                {
+                    $tempVar = new Variable($tempVarType,
+                        $tempVarOperator,$tempVarVal);
 
-                array_push($stack1, $tempVar);
+                    array_push($stack1, $tempVar);
+                }
                 continue;
             }
 
@@ -602,7 +712,7 @@ $allId = [477974,
         }
         $index++;
     }
-
+    //var_dump($stack2);
     while(sizeof($stack2) != 0)
     {
         $tmp = array_pop($stack2);
@@ -611,50 +721,153 @@ $allId = [477974,
 
     //var_dump($stack1);
 
-    for($index = 0; $index < sizeof($stack1); $index++)
+    /*for($index = 0; $index < sizeof($stack1); $index++)
     {
         echo $stack1[$index]->type . "\n";
-    }
+    }*/
 
     //query is done here
     //request for the list
     new whereNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/demographics/",
+        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE",
         "AND", "CONTAINS", $conversationId, $curl_session);
+    //echo curl_getinfo($curl_session, CURLINFO_HTTP_CODE);
+    $flag = [0,0,0,0,0,0,0,0,0,0,0];
     for($index = 0; $index < sizeof($stack1);$index ++)
-    new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/demographics/AGE/",
-        "AGE", $conversationId, $curl_session);
-    new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean diastolic/",
-        "AGE", $conversationId, $curl_session);
-    new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean systolic/",
-        "AGE", $conversationId, $curl_session);
-    new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/",
-        "AGE", $conversationId, $curl_session);
-    $resultId = strchr($response, ":");
-    $resultId = chopToId2($resultId);
-    curl_setopt($curl_session, CURLOPT_URL, 
-        IRCT_GET_JSON_RESULTS_URL . '/' . $resultId);
-    $response = curl_exec($curl_session);
-    $results = json_decode($response, true);
+    {
+        if(get_class($stack1[$index]) == "Variable")
+            switch($stack1[$index]->type)
+            {
+                case "Gender":
+                    $flag[0]++;
+                    if($flag[0]==1)
+                    {
+                        new selectNode(
+                            temp____ . GENDER,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Race":
+                    $flag[1]++;
+                    if($flag[1]==1)
+                    {
+                        new selectNode(
+                            temp____ . RACE,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Age":
+                    $flag[2]++;
+                    if($flag[2]==1)
+                    {
+                        new selectNode(
+                            temp____ . AGE,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Mean_Diastolic":
+                    $flag[3]++;
+                    if($flag[3]==1)
+                    {
+                        new selectNode(
+                            temp____ . MEAN_DIASTOLIC,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Mean_Systolic":
+                    $flag[4]++;
+                    if($flag[4]==1)
+                    {
+                        new selectNode(
+                            temp____ . MEAN_SYSTOLIC,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "BMI":
+                    $flag[5]++;
+                    if($flag[5]==1)
+                    {
+                        new selectNode(
+                            temp____ . BMI,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Height":
+                    $flag[6]++;
+                    if($flag[6]==1)
+                    {
+                        new selectNode(
+                            temp____ . STANDING_HEIGHT,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Weight":
+                    $flag[7]++;
+                    if($flag[7]==1)
+                    {
+                        new selectNode(
+                            temp____ . WEIGHT,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Serum Glucose":
+                    $flag[8]++;
+                    if($flag[8]==1)
+                    {
+                        new selectNode(
+                            temp____ . GLUCOSE_SERUM,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Uric Acid":                    
+                    $flag[9]++;
+                    if($flag[9]==1)
+                    {
+                        new selectNode(
+                            temp____ . URIC_ACID,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+                case "Total Cholesterol":
+                    $flag[10]++;
+                    if($flag[0]==1)
+                    {
+                        new selectNode(
+                            temp____ . TOTAL_CHOLESTEROL,
+                            "AGE", $conversationId, $curl_session);
+                    }
+                    break;
+            }
+            //echo curl_getinfo($curl_session, CURLINFO_HTTP_CODE);
 
+    }
 
-
-
+    
     //run query
     $runQueryList = array('cid'=>$conversationId);
     $query = http_build_query($runQueryList);
     curl_setopt($curl_session, CURLOPT_URL, IRCT_RUN_QUERY_URL . '?' . $query);
     $response = curl_exec($curl_session);
+     //echo curl_getinfo($curl_session, CURLINFO_HTTP_CODE);
 
 
 
+    $resultId = strchr($response, ":");
+    $resultId = chopToId2($resultId);
+    curl_setopt($curl_session, CURLOPT_URL, 
+        IRCT_GET_JSON_RESULTS_URL . '/' . $resultId);
+    $response = curl_exec($curl_session);
+     //echo curl_getinfo($curl_session, CURLINFO_HTTP_CODE);
 
-
-    
+    $results = json_decode($response, true);
+    //echo "results";
+    //var_dump($results);
+    $all = [];
+    for($i = 0; $i < count($results); $i++)
+    {
+        $all[$i] = intval($results[$i]["PATIENT_NUM"]);
+    }
+    //var_dump($all);
     //evaluation step begins here
     while(sizeof($stack1) != 0)
     {
@@ -677,29 +890,52 @@ $allId = [477974,
                 switch($temp1->type)
                 {
                     case "Gender":
+                        $result1 = getPatient_Info($results,
+                            GENDER, $temp1->operator, $temp1->value);
                         break;
                     case "Race":
+                        $result1 = getPatient_Info($results,
+                            RACE, $temp1->operator, $temp1->value);
                         break;
                     case "Age":
+                        $result1 = getPatient_Info($results,
+                            AGE, $temp1->operator, $temp1->value);
                         break;
-                    case "Mean Diastolic":
+                    case "Mean_Diastolic":
+                        $result1 = getPatient_Info($results,
+                            MEAN_DIASTOLIC, $temp1->operator, $temp1->value);
                         break;
-                    case "Mean Systolic":
+                    case "Mean_Systolic":
+                        $result1 = getPatient_Info($results,
+                            MEAN_SYSTOLIC, $temp1->operator, $temp1->value);
                         break;
                     case "BMI":
+                        $result1 = getPatient_Info($results,
+                            BMI, $temp1->operator, $temp1->value);
                         break;
                     case "Height":
+                        $result1 = getPatient_Info($results,
+                            STANDING_HEIGHT, $temp1->operator, $temp1->value);
                         break;
                     case "Weight":
+                        $result1 = getPatient_Info($results,
+                            WEIGHT, $temp1->operator, $temp1->value);
                         break;
                     case "Serum Glucose":
+                        $result1 = getPatient_Info($results,
+                            GLUCOSE_SERUM, $temp1->operator, $temp1->value);
                         break;
                     case "Uric Acid":
+                        $result1 = getPatient_Info($results,
+                            URIC_ACID, $temp1->operator, $temp1->value);
                         break;
                     case "Total Cholesterol":
+                        $result1 = getPatient_Info($results,
+                            TOTAL_CHOLESTEROL, $temp1->operator, $temp1->value);
                         break;
                 }
-                $result = array_diff($result1, $all);
+                $result = array_diff($all, $result1);
+                //var_dump($result);
                 array_push($stack1, $result);
             }
             else
@@ -708,30 +944,54 @@ $allId = [477974,
                 $temp2 = array_pop($stack1);
 
                 if(!is_array($temp1))
-                switch($temp1->type)
                 {
-                    case "Gender":
-                        break;
-                    case "Race":
-                        break;
-                    case "Age":
-                        break;
-                    case "Mean Diastolic":
-                        break;
-                    case "Mean Systolic":
-                        break;
-                    case "BMI":
-                        break;
-                    case "Height":
-                        break;
-                    case "Weight":
-                        break;
-                    case "Serum Glucose":
-                        break;
-                    case "Uric Acid":
-                        break;
-                    case "Total Cholesterol":
-                        break;
+                    switch($temp1->type)
+                    {
+                        case "Gender":
+                            $result1 = getPatient_Info($results,
+                                GENDER, $temp1->operator, $temp1->value);
+                            break;
+                        case "Race":
+                            $result1 = getPatient_Info($results,
+                                RACE, $temp1->operator, $temp1->value);
+                            break;
+                        case "Age":
+                            $result1 = getPatient_Info($results,
+                                AGE, $temp1->operator, $temp1->value);
+                            break;
+                        case "Mean_Diastolic":
+                            $result1 = getPatient_Info($results,
+                                MEAN_DIASTOLIC, $temp1->operator, $temp1->value);
+                            break;
+                        case "Mean_Systolic":
+                            $result1 = getPatient_Info($results,
+                                MEAN_SYSTOLIC, $temp1->operator, $temp1->value);
+                            break;
+                        case "BMI":
+                            $result1 = getPatient_Info($results,
+                                BMI, $temp1->operator, $temp1->value);
+                            break;
+                        case "Height":
+                            $result1 = getPatient_Info($results,
+                                STANDING_HEIGHT, $temp1->operator, $temp1->value);
+                            break;
+                        case "Weight":
+                            $result1 = getPatient_Info($results,
+                                WEIGHT, $temp1->operator, $temp1->value);
+                            break;
+                        case "Serum Glucose":
+                            $result1 = getPatient_Info($results,
+                                GLUCOSE_SERUM, $temp1->operator, $temp1->value);
+                            break;
+                        case "Uric Acid":
+                            $result1 = getPatient_Info($results,
+                                URIC_ACID, $temp1->operator, $temp1->value);
+                            break;
+                        case "Total Cholesterol":
+                            $result1 = getPatient_Info($results,
+                                TOTAL_CHOLESTEROL, $temp1->operator, $temp1->value);
+                            break;
+                    }
                 }
                 else
                 {
@@ -739,30 +999,54 @@ $allId = [477974,
                 }
 
                 if(!is_array($temp2))
-                switch($temp2->type)
                 {
-                    case "Gender":
-                        break;
-                    case "Race":
-                        break;
-                    case "Age":
-                        break;
-                    case "Mean Diastolic":
-                        break;
-                    case "Mean Systolic":
-                        break;
-                    case "BMI":
-                        break;
-                    case "Height":
-                        break;
-                    case "Weight":
-                        break;
-                    case "Serum Glucose":
-                        break;
-                    case "Uric Acid":
-                        break;
-                    case "Total Cholesterol":
-                        break;
+                    switch($temp2->type)
+                    {
+                        case "Gender":
+                            $result2 = getPatient_Info($results,
+                                GENDER, $temp2->operator, $temp2->value);
+                            break;
+                        case "Race":
+                            $result2 = getPatient_Info($results,
+                                RACE, $temp2->operator, $temp2->value);
+                            break;
+                        case "Age":
+                            $result2 = getPatient_Info($results,
+                                AGE, $temp2->operator, $temp2->value);
+                            break;
+                        case "Mean_Diastolic":
+                            $result2 = getPatient_Info($results,
+                                MEAN_DIASTOLIC, $temp2->operator, $temp2->value);
+                            break;
+                        case "Mean_Systolic":
+                            $result2 = getPatient_Info($results,
+                                MEAN_SYSTOLIC, $temp2->operator, $temp2->value);
+                            break;
+                        case "BMI":
+                            $result2 = getPatient_Info($results,
+                                BMI, $temp2->operator, $temp2->value);
+                            break;
+                        case "Height":
+                            $result2 = getPatient_Info($results,
+                                STANDING_HEIGHT, $temp2->operator, $temp2->value);
+                            break;
+                        case "Weight":
+                            $result2 = getPatient_Info($results,
+                                WEIGHT, $temp2->operator, $temp2->value);
+                            break;
+                        case "Serum Glucose":
+                            $result2 = getPatient_Info($results,
+                                GLUCOSE_SERUM, $temp2->operator, $temp2->value);
+                            break;
+                        case "Uric Acid":
+                            $result2 = getPatient_Info($results,
+                                URIC_ACID, $temp2->operator, $temp2->value);
+                            break;
+                        case "Total Cholesterol":
+                            $result2 = getPatient_Info($results,
+                                TOTAL_CHOLESTEROL, $temp2->operator, $temp2->value);
+                            break;
+                    }
                 }
                 else
                 {
@@ -782,7 +1066,62 @@ $allId = [477974,
             }
         }
     }
+    $temp = array_pop($stack1);
+    //var_dump($temp);
+    if(is_array($temp) != true)
+    {
+        switch($temp->type)
+        {
+            case "Gender":
+                $temp = getPatient_Info($results,
+                    GENDER, $temp->operator, $temp->value);
+                break;
+            case "Race":
+                $temp = getPatient_Info($results,
+                    RACE, $temp->operator, $temp->value);
+                break;
+            case "Age":
+                $temp = getPatient_Info($results,
+                    AGE, $temp->operator, $temp->value);
+                break;
+            case "Mean_Diastolic":
+                $temp = getPatient_Info($results,
+                    MEAN_DIASTOLIC, $temp->operator, $temp->value);
+                break;
+            case "Mean_Systolic":
+                $temp = getPatient_Info($results,
+                    MEAN_SYSTOLIC, $temp->operator, $temp->value);
+                break;
+            case "BMI":
+                $temp = getPatient_Info($results,
+                    BMI, $temp->operator, $temp->value);
+                break;
+            case "Height":
+                $temp = getPatient_Info($results,
+                    STANDING_HEIGHT, $temp->operator, $temp->value);
+                break;
+            case "Weight":
+                $temp = getPatient_Info($results,
+                    WEIGHT, $temp->operator, $temp->value);
+                break;
+            case "Serum Glucose":
+                $temp = getPatient_Info($results,
+                    GLUCOSE_SERUM, $temp->operator, $temp->value);
+                break;
+            case "Uric Acid":
+                $temp = getPatient_Info($results,
+                    URIC_ACID, $temp->operator, $temp->value);
+                break;
+            case "Total Cholesterol":
+                $temp = getPatient_Info($results,
+                    TOTAL_CHOLESTEROL, $temp->operator, $temp->value);
+                break;
+        }
+    }
+    //var_dump($temp);
+    $result = array_intersect($allId, $temp);
 
+    var_dump(sizeof($result));
     
     end:
     echo "this is the end";
