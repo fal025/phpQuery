@@ -74,11 +74,8 @@
     curl_setopt($curl_session, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($curl_session, CURLOPT_COOKIEFILE, "");
     $response = curl_exec($curl_session);
-    //$response = file(IRCT_START_QUERY_URL);  //same as GET()
     $conversationId = strchr($response,"\"cid\"");
     $conversationId = chopToId($conversationId);
-    //echo $conversationId;
-    //var_dump($_COOKIE);/*
     //node for where clause
     class whereNode
     {
@@ -98,14 +95,6 @@
             curl_setopt($curl_session, CURLOPT_URL, 
                 IRCT_WHERE_QUERY_URL . '?' . $query);
             $response = curl_exec($curl_session);
-            //var_dump($response);
-            //var_dump( curl_getinfo($curl_session));
-            //var_dump($_COOKIE);
-
-            //echo "\n" . $response . "\n";
-            //$response = 
-                //file_get_contents(IRCT_WHERE_QUERY_URL . '?' . $query);
-
         }
     }
 
@@ -177,11 +166,11 @@
     // pivot results
     //var_dump($response);
     $results = json_decode($response, true);
-    //var_dump( $results);
+    var_dump( $results);
     
     //echo count($results);
 
-    $patientId = [];
+    /*$patientId = [];
     for($i = 0; $i < count($results); $i++)
     {
         $patientId[$i] = intval($results[$i]["PATIENT_NUM"]);
@@ -191,5 +180,5 @@
     echo $patientId[0];
 
 
-    return $patientId;
+    return $patientId;*/
 ?>
