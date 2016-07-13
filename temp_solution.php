@@ -37,6 +37,19 @@
     // get results
     const IRCT_GET_JSON_RESULTS_URL = IRCT_RESULTS_BASE_URL . 'download/json';
     
+    // sample clauses
+    const RACE = 'NHANES Public/Public/Studies///NHANES/NHANES/demographics/RACE/';
+    const SEX = 'NHANES Public/Public/Studies///NHANES/NHANES/demographics/SEX/';
+    const AGE = 'NHANES Public/Public/Studies///NHANES/NHANES/demographics/AGE/';
+    const MEAN_DIASTOLIC = 'NHANES Public/Public/Studies///NHANES/NHANES/examination/blood pressure/mean diastolic/';
+    const MEAN_SYSTOLIC = 'NHANES Public/Public/Studies///NHANES/NHANES/examination/blood pressure/mean systolic/';
+    const BMI = 'NHANES Public/Public/Studies///NHANES/NHANES/examination/body measures/Body Mass Index(kg/m**2)/';
+    const STANDING_HEIGHT = 'NHANES Public/Public/Studies///NHANES/NHANES/examination/body measures/Standing Height(cm)/';
+    const WEIGHT = 'NHANES Public/Public/Studies///NHANES/NHANES/examination/body measures/Weight (kg)/';
+    const GLUCOSE_SERUM = 'NHANES Public/Public/Studies///NHANES/NHANES/laboratory/biochemistry/Glucose, serum(mg/dL)/';
+    const URIC_ACID = 'NHANES Public/Public/Studies///NHANES/NHANES/laboratory/biochemistry/Uric acid(mg/dL)/';
+    const TOTAL_CHOLESTEROL = 'NHANES Public/Public/Studies///NHANES/NHANES/laboratory/biochemistry/Total Cholesterol(mg/dL)/';
+    
     // start a conversation
     $response = file(IRCT_START_QUERY_URL);  //same as GET()
     $conversationId = strchr($response[0],"\"cid\"");
