@@ -28,7 +28,7 @@
     const IRCT_GET_JSON_RESULTS_URL = IRCT_RESULTS_BASE_URL . 'download/json';
 
     // sample clauses
-    const temp____ = 'NHANES Public/Public/Studies///NHANES';
+    const temp____ = 'NHANES Public/Public Studies///NHANES';
     const RACE = '/NHANES/demographics/RACE/';
     const GENDER = '/NHANES/demographics/SEX/';
     const AGE = '/NHANES/demographics/AGE/';
@@ -87,8 +87,35 @@
     function getPatient_Info($results, const $type, $operator, $value)
     {
         $myList = [];
+        // replace all '/' to '\'
+	    str_replace('/', '\', $type);
+	    
         for ($i = 0; $i < count($results); $i++)
         {
+            if ($type == RACE)
+	        {
+		        foreach (RACE_ARRAY as $value)
+		        {
+		            if ($results[$i][$type . $value] != NULL)
+		            {
+		                $type = $type . $value;
+			            break;
+		            }
+		        }
+	        }
+
+	        if ($type == GENDER)
+	        {
+		        foreach (GENDER_ARRAY as $value)
+		        {
+		            if ($results[$i][$type . $value] != NULL)
+		            {
+		                $type = $type . $value;
+			        break;
+		            }
+		        }
+	        }
+	        
             // for greater than condition
             if ($operator == '>')
             {
