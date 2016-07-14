@@ -313,16 +313,40 @@ $allId = [477974,
     //consts for clauses
     const temp____ = 'NHANES Public/Public Studies///NHANES';
     const RACE = '/NHANES/demographics/RACE/';
+    const RACE_ = '\\NHANES\\demographics\\RACE\\';
+
     const GENDER = '/NHANES/demographics/SEX/';
+    const GENDER_ = '\\NHANES\\demographics\\SEX\\';
+
     const AGE = '/NHANES/demographics/AGE/';
+    const AGE_ = '\\NHANES\\demographics\\AGE\\';
+
     const MEAN_DIASTOLIC = '/NHANES/examination/blood pressure/mean diastolic/';
+    const MEAN_DIASTOLIC_ = '\\NHANES\\examination\\blood pressure\\mean diastolic\\';
+
     const MEAN_SYSTOLIC = '/NHANES/examination/blood pressure/mean systolic/';
-    const BMI = 'NHANES/examination/body measures/Body Mass Index(kg/m**2)/';
+    const MEAN_SYSTOLIC_ = '\\NHANES\\examination\\blood pressure\\mean systolic\\';
+
+    const BMI = '/NHANES/examination/body measures/Body Mass Index (kg/m**2)/';
+    const BMI_ = '\\NHANES\\examination\\body measures\\Body Mass Index (kg/m**2)\\';
+
     const STANDING_HEIGHT = '/NHANES/examination/body measures/Standing Height(cm)/';
+    const STANDING_HEIGHT_ = '\\NHANES\\examination\\body measures\\Standing Height(cm)\\';
+
     const WEIGHT = '/NHANES/examination/body measures/Weight (kg)/';
+    const WEIGHT_ = '\\NHANES\\examination\\body measures\\Weight (kg)\\';
+
     const GLUCOSE_SERUM = '/NHANES/laboratory/biochemistry/Glucose, serum(mg/dL)/';
+    const GLUCOSE_SERUM_ = '\\NHANES\\laboratory\\biochemistry\\Glucose, serum(mg/dL)\\';
+
     const URIC_ACID = '/NHANES/laboratory/biochemistry/Uric acid(mg/dL)/';
+    const URIC_ACID_ = '\\NHANES\\laboratory\\biochemistry\\Uric acid(mg/dL)\\';
+
     const TOTAL_CHOLESTEROL = '/NHANES/laboratory/biochemistry/Total Cholesterol(mg/dL)/';
+    const TOTAL_CHOLESTEROL_ = '\\NHANES\\laboratory\\biochemistry\\Total Cholesterol(mg/dL)\\';
+
+    const RACE_ARRAY = ["white","black","other","other_hispanic","mexican"];
+    const GENDER_ARRAY = ["male","female"];
     
     //function that help to chop the id conversation id from string
     function chopToId($conversationId_)
@@ -368,33 +392,20 @@ $allId = [477974,
     {
         $myList = [];
         // replace all '/' to '\'
-	    $type = str_replace('/', '\\', $type);
-	    
         for ($i = 0; $i < count($results); $i++)
         {
-            if ($type == RACE)
-	        {
-		        foreach (RACE_ARRAY as $value)
-		        {
-		            if ($results[$i][$type . $value] != NULL)
-		            {
-		                $type = $type . $value;
-			            break;
-		            }
-		        }
-	        }
-	        if ($type == GENDER)
-	        {
-		        foreach (GENDER_ARRAY as $value)
-		        {
-		            if ($results[$i][$type . $value] != NULL)
-		            {
-		                $type = $type . $value;
-			        break;
-		            }
-		        }
-	        }
-                // for greater than condition
+            // for greater than condition
+            if(strpos($type, GENDER_) !== false ||
+                strpos($type, RACE_) !== false)
+            {
+                //echo "true<br>"; 
+                //if($i % 100 == 0)echo strlen($results[$i][$type])."<br>";
+                if(strlen($results[$i][$type]) != 0)
+                {
+                    $myList[] = intval($results[$i]["PATIENT_NUM"]);
+                }
+                continue;
+            }
             if ($operator == '>')
             {
                 if (intval($results[$i][$type]) > $value)
@@ -527,7 +538,7 @@ $allId = [477974,
         else if($tempString[$index] == ')')
         {
             $layer--;
-        }
+        } 
         if(substr($tempString, $index, 3) == "AND" && $layer == 1)
             break;
         
@@ -540,7 +551,7 @@ $allId = [477974,
     //this will end in push every object into stack1 which is actually a postfix
     //expression
     $index = 0;
-    var_dump($parsedString);
+    //var_dump($parsedString);
        // goto end;
     while($index < strlen($parsedString))
     {
@@ -810,7 +821,7 @@ $allId = [477974,
                             "AGE", $conversationId, $curl_session);
                     }
                     break;
-                case "Serum Glucose":
+                case "Serum_Glucose":
                     $flag[8]++;
                     if($flag[8]==1)
                     {
@@ -819,7 +830,7 @@ $allId = [477974,
                             "AGE", $conversationId, $curl_session);
                     }
                     break;
-                case "Uric Acid":                    
+                case "Uric_Acid":                    
                     $flag[9]++;
                     if($flag[9]==1)
                     {
@@ -828,7 +839,7 @@ $allId = [477974,
                             "AGE", $conversationId, $curl_session);
                     }
                     break;
-                case "Total Cholesterol":
+                case "Total_Cholesterol":
                     $flag[10]++;
                     if($flag[0]==1)
                     {
@@ -891,47 +902,49 @@ $allId = [477974,
                 {
                     case "Gender":
                         $result1 = getPatient_Info($results,
-                            GENDER, $temp1->operator, $temp1->value);
+                            GENDER_ . $temp1->value . '\\',
+                             $temp1->operator, $temp1->value);
                         break;
                     case "Race":
                         $result1 = getPatient_Info($results,
-                            RACE, $temp1->operator, $temp1->value);
+                            RACE_ . $temp1->value . '\\',
+                            $temp1->operator, $temp1->value);
                         break;
                     case "Age":
                         $result1 = getPatient_Info($results,
-                            AGE, $temp1->operator, $temp1->value);
+                            AGE_, $temp1->operator, $temp1->value);
                         break;
                     case "Mean_Diastolic":
                         $result1 = getPatient_Info($results,
-                            MEAN_DIASTOLIC, $temp1->operator, $temp1->value);
+                            MEAN_DIASTOLIC_, $temp1->operator, $temp1->value);
                         break;
                     case "Mean_Systolic":
                         $result1 = getPatient_Info($results,
-                            MEAN_SYSTOLIC, $temp1->operator, $temp1->value);
+                            MEAN_SYSTOLIC_, $temp1->operator, $temp1->value);
                         break;
                     case "BMI":
                         $result1 = getPatient_Info($results,
-                            BMI, $temp1->operator, $temp1->value);
+                            BMI_, $temp1->operator, $temp1->value);
                         break;
                     case "Height":
                         $result1 = getPatient_Info($results,
-                            STANDING_HEIGHT, $temp1->operator, $temp1->value);
+                            STANDING_HEIGHT_, $temp1->operator, $temp1->value);
                         break;
                     case "Weight":
                         $result1 = getPatient_Info($results,
-                            WEIGHT, $temp1->operator, $temp1->value);
+                            WEIGHT_, $temp1->operator, $temp1->value);
                         break;
-                    case "Serum Glucose":
+                    case "Serum_Glucose":
                         $result1 = getPatient_Info($results,
-                            GLUCOSE_SERUM, $temp1->operator, $temp1->value);
+                            GLUCOSE_SERUM_, $temp1->operator, $temp1->value);
                         break;
-                    case "Uric Acid":
+                    case "Uric_Acid":
                         $result1 = getPatient_Info($results,
-                            URIC_ACID, $temp1->operator, $temp1->value);
+                            URIC_ACID_, $temp1->operator, $temp1->value);
                         break;
-                    case "Total Cholesterol":
+                    case "Total_Cholesterol":
                         $result1 = getPatient_Info($results,
-                            TOTAL_CHOLESTEROL, $temp1->operator, $temp1->value);
+                            TOTAL_CHOLESTEROL_, $temp1->operator, $temp1->value);
                         break;
                 }
                 $result = array_diff($all, $result1);
@@ -949,47 +962,49 @@ $allId = [477974,
                     {
                         case "Gender":
                             $result1 = getPatient_Info($results,
-                                GENDER, $temp1->operator, $temp1->value);
+                                GENDER_ . $temp1->value . '\\',
+                                $temp1->operator, $temp1->value);
                             break;
                         case "Race":
                             $result1 = getPatient_Info($results,
-                                RACE, $temp1->operator, $temp1->value);
+                                RACE_ . $temp1->value . '\\',
+                                $temp1->operator, $temp1->value);
                             break;
                         case "Age":
                             $result1 = getPatient_Info($results,
-                                AGE, $temp1->operator, $temp1->value);
+                                AGE_, $temp1->operator, $temp1->value);
                             break;
                         case "Mean_Diastolic":
                             $result1 = getPatient_Info($results,
-                                MEAN_DIASTOLIC, $temp1->operator, $temp1->value);
+                                MEAN_DIASTOLIC_, $temp1->operator, $temp1->value);
                             break;
                         case "Mean_Systolic":
                             $result1 = getPatient_Info($results,
-                                MEAN_SYSTOLIC, $temp1->operator, $temp1->value);
+                                MEAN_SYSTOLIC_, $temp1->operator, $temp1->value);
                             break;
                         case "BMI":
                             $result1 = getPatient_Info($results,
-                                BMI, $temp1->operator, $temp1->value);
+                                BMI_, $temp1->operator, $temp1->value);
                             break;
                         case "Height":
                             $result1 = getPatient_Info($results,
-                                STANDING_HEIGHT, $temp1->operator, $temp1->value);
+                                STANDING_HEIGHT_, $temp1->operator, $temp1->value);
                             break;
                         case "Weight":
                             $result1 = getPatient_Info($results,
-                                WEIGHT, $temp1->operator, $temp1->value);
+                                WEIGHT_, $temp1->operator, $temp1->value);
                             break;
-                        case "Serum Glucose":
+                        case "Serum_Glucose":
                             $result1 = getPatient_Info($results,
-                                GLUCOSE_SERUM, $temp1->operator, $temp1->value);
+                                GLUCOSE_SERUM_, $temp1->operator, $temp1->value);
                             break;
-                        case "Uric Acid":
+                        case "Uric_Acid":
                             $result1 = getPatient_Info($results,
-                                URIC_ACID, $temp1->operator, $temp1->value);
+                                URIC_ACID_, $temp1->operator, $temp1->value);
                             break;
-                        case "Total Cholesterol":
+                        case "Total_Cholesterol":
                             $result1 = getPatient_Info($results,
-                                TOTAL_CHOLESTEROL, $temp1->operator, $temp1->value);
+                                TOTAL_CHOLESTEROL_, $temp1->operator, $temp1->value);
                             break;
                     }
                 }
@@ -1004,47 +1019,49 @@ $allId = [477974,
                     {
                         case "Gender":
                             $result2 = getPatient_Info($results,
-                                GENDER, $temp2->operator, $temp2->value);
+                                GENDER_ . $temp2->value . '\\',
+                                $temp2->operator, $temp2->value);
                             break;
                         case "Race":
                             $result2 = getPatient_Info($results,
-                                RACE, $temp2->operator, $temp2->value);
+                                RACE_ . $temp2->value . '\\',
+                                $temp2->operator, $temp2->value);
                             break;
                         case "Age":
                             $result2 = getPatient_Info($results,
-                                AGE, $temp2->operator, $temp2->value);
+                                AGE_, $temp2->operator, $temp2->value);
                             break;
                         case "Mean_Diastolic":
                             $result2 = getPatient_Info($results,
-                                MEAN_DIASTOLIC, $temp2->operator, $temp2->value);
+                                MEAN_DIASTOLIC_, $temp2->operator, $temp2->value);
                             break;
                         case "Mean_Systolic":
                             $result2 = getPatient_Info($results,
-                                MEAN_SYSTOLIC, $temp2->operator, $temp2->value);
+                                MEAN_SYSTOLIC_, $temp2->operator, $temp2->value);
                             break;
                         case "BMI":
                             $result2 = getPatient_Info($results,
-                                BMI, $temp2->operator, $temp2->value);
+                                BMI_, $temp2->operator, $temp2->value);
                             break;
                         case "Height":
                             $result2 = getPatient_Info($results,
-                                STANDING_HEIGHT, $temp2->operator, $temp2->value);
+                                STANDING_HEIGHT_, $temp2->operator, $temp2->value);
                             break;
                         case "Weight":
                             $result2 = getPatient_Info($results,
-                                WEIGHT, $temp2->operator, $temp2->value);
+                                WEIGHT_, $temp2->operator, $temp2->value);
                             break;
-                        case "Serum Glucose":
+                        case "Serum_Glucose":
                             $result2 = getPatient_Info($results,
-                                GLUCOSE_SERUM, $temp2->operator, $temp2->value);
+                                GLUCOSE_SERUM_, $temp2->operator, $temp2->value);
                             break;
-                        case "Uric Acid":
+                        case "Uric_Acid":
                             $result2 = getPatient_Info($results,
-                                URIC_ACID, $temp2->operator, $temp2->value);
+                                URIC_ACID_, $temp2->operator, $temp2->value);
                             break;
-                        case "Total Cholesterol":
+                        case "Total_Cholesterol":
                             $result2 = getPatient_Info($results,
-                                TOTAL_CHOLESTEROL, $temp2->operator, $temp2->value);
+                                TOTAL_CHOLESTEROL_, $temp2->operator, $temp2->value);
                             break;
                     }
                 }
@@ -1066,63 +1083,78 @@ $allId = [477974,
             }
         }
     }
+    //var_dump($results);
     $temp = array_pop($stack1);
     //var_dump($temp);
-    if(is_array($temp) != true)
+    if(is_array($temp) !== true)
     {
         switch($temp->type)
         {
             case "Gender":
                 $temp = getPatient_Info($results,
-                    GENDER, $temp->operator, $temp->value);
+                    GENDER_ . $temp->value . '\\',
+                    $temp->operator, $temp->value);
                 break;
             case "Race":
                 $temp = getPatient_Info($results,
-                    RACE, $temp->operator, $temp->value);
+                    RACE_ . $temp->value . '\\',
+                    $temp->operator, $temp->value);
                 break;
             case "Age":
                 $temp = getPatient_Info($results,
-                    AGE, $temp->operator, $temp->value);
+                    AGE_, $temp->operator, $temp->value);
                 break;
             case "Mean_Diastolic":
                 $temp = getPatient_Info($results,
-                    MEAN_DIASTOLIC, $temp->operator, $temp->value);
+                    MEAN_DIASTOLIC_, $temp->operator, $temp->value);
                 break;
             case "Mean_Systolic":
                 $temp = getPatient_Info($results,
-                    MEAN_SYSTOLIC, $temp->operator, $temp->value);
+                    MEAN_SYSTOLIC_, $temp->operator, $temp->value);
                 break;
             case "BMI":
                 $temp = getPatient_Info($results,
-                    BMI, $temp->operator, $temp->value);
+                    BMI_, $temp->operator, $temp->value);
                 break;
             case "Height":
                 $temp = getPatient_Info($results,
-                    STANDING_HEIGHT, $temp->operator, $temp->value);
+                    STANDING_HEIGHT_, $temp->operator, $temp->value);
                 break;
             case "Weight":
                 $temp = getPatient_Info($results,
-                    WEIGHT, $temp->operator, $temp->value);
+                    WEIGHT_, $temp->operator, $temp->value);
                 break;
-            case "Serum Glucose":
+            case "Serum_Glucose":
                 $temp = getPatient_Info($results,
-                    GLUCOSE_SERUM, $temp->operator, $temp->value);
+                    GLUCOSE_SERUM_, $temp->operator, $temp->value);
                 break;
-            case "Uric Acid":
+            case "Uric_Acid":
                 $temp = getPatient_Info($results,
-                    URIC_ACID, $temp->operator, $temp->value);
+                    URIC_ACID_, $temp->operator, $temp->value);
                 break;
-            case "Total Cholesterol":
+            case "Total_Cholesterol":
                 $temp = getPatient_Info($results,
-                    TOTAL_CHOLESTEROL, $temp->operator, $temp->value);
+                    TOTAL_CHOLESTEROL_, $temp->operator, $temp->value);
                 break;
         }
     }
+    echo sizeof($temp);
     //var_dump($temp);
+    //var_dump($allId);
     $result = array_intersect($allId, $temp);
-
-    var_dump(sizeof($result));
-    
+    echo sizeof($result) . "<br>";
+    //var_dump($result);
+    $temp = array_fill(0, 2504, 0);
+    //var_dump($temp);
+    foreach($result as &$value)
+    {
+        $tmp = array_search($value, $allId);
+        $temp[$tmp] = 1;
+    }
+    $result = $temp;
+    var_dump($result);
     end:
-    echo "this is the end";
+    echo "<br>";
+    
     return 0;
+?>

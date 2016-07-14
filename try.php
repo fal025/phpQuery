@@ -36,17 +36,38 @@ RawBlameHistory     888 lines (793 sloc)  28.1 KB
     // sample clauses
     const temp____ = 'NHANES Public/Public Studies///NHANES';
     const RACE = '/NHANES/demographics/RACE/';
+    const RACE_ = '\\NHANES\\demographics\\RACE\\';
+
     const GENDER = '/NHANES/demographics/SEX/';
+    const GENDER_ = '\\NHANES\\demographics\\SEX\\';
+
     const AGE = '/NHANES/demographics/AGE/';
+    const AGE_ = '\\NHANES\\demographics\\AGE\\';
+
     const MEAN_DIASTOLIC = '/NHANES/examination/blood pressure/mean diastolic/';
+    const MEAN_DIASTOLIC_ = '\\NHANES\\examination\\blood pressure\\mean diastolic\\';
+
     const MEAN_SYSTOLIC = '/NHANES/examination/blood pressure/mean systolic/';
-    const BMI = 'NHANES/examination/body measures/Body Mass Index(kg/m**2)/';
+    const MEAN_SYSTOLIC_ = '\\NHANES\\examination\\blood pressure\\mean systolic\\';
+
+    const BMI = '/NHANES/examination/body measures/Body Mass Index (kg/m**2)/';
+    const BMI_ = '\\NHANES\\examination\\body measures\\Body Mass Index (kg/m**2)\\';
+
     const STANDING_HEIGHT = '/NHANES/examination/body measures/Standing Height(cm)/';
+    const STANDING_HEIGHT_ = '\\NHANES\\examination\\body measures\\Standing Height(cm)\\';
+
     const WEIGHT = '/NHANES/examination/body measures/Weight (kg)/';
+    const WEIGHT_ = '\\NHANES\\examination\\body measures\\Weight (kg)\\';
+
     const GLUCOSE_SERUM = '/NHANES/laboratory/biochemistry/Glucose, serum(mg/dL)/';
+    const GLUCOSE_SERUM_ = '\\NHANES\\laboratory\\biochemistry\\Glucose, serum(mg/dL)\\';
+
     const URIC_ACID = '/NHANES/laboratory/biochemistry/Uric acid(mg/dL)/';
+    const URIC_ACID_ = '\\NHANES\\laboratory\\biochemistry\\Uric acid(mg/dL)\\';
+
     const TOTAL_CHOLESTEROL = '/NHANES/laboratory/biochemistry/Total Cholesterol(mg/dL)/';
-    
+    const TOTAL_CHOLESTEROL_ = '\\NHANES\\laboratory\\biochemistry\\Total Cholesterol(mg/dL)\\';
+
     //function that help to chop the id conversation id from string
     function chopToId($conversationId_)
     {
@@ -233,17 +254,14 @@ RawBlameHistory     888 lines (793 sloc)  28.1 KB
         "NHANES Public/Public Studies///NHANES/NHANES/demographics/RACE/black/",
         "OR", "CONTAINS", $conversationId, $curl_session);*/
     new selectNode(
+        "". temp____ . GENDER,
+        "AGE", $conversationId, $curl_session);
+   new selectNode(
+        "". temp____ . RACE,
+        "AGE", $conversationId, $curl_session);
+    new selectNode(
         "". temp____ . AGE,
         "AGE", $conversationId, $curl_session);
-    /*new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean diastolic/",
-        "AGE", $conversationId, $curl_session);*/
-    /*new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/mean systolic/",
-        "AGE", $conversationId, $curl_session);*/
-    /*new selectNode(
-        "NHANES Public/Public Studies///NHANES/NHANES/examination/blood pressure/60 sec HR(30 sec HR*2)/",
-        "BLOODPRESSURE", $conversationId, $curl_session);*/
     // run the full query and store the result Id
     $runQueryList = array('cid'=>$conversationId);
     $query = http_build_query($runQueryList);
@@ -268,15 +286,15 @@ RawBlameHistory     888 lines (793 sloc)  28.1 KB
     var_dump( $results);
     
     //echo count($results);
-    /*$patientId = [];
+    $patientId = [];
     for($i = 0; $i < count($results); $i++)
     {
         $patientId[$i] = intval($results[$i]["PATIENT_NUM"]);
     }
     sort($patientId,SORT_NUMERIC);
-    var_dump($patientId);
-    echo $patientId[0];
-    return $patientId;*/
+    //var_dump($patientId);
+    echo sizeof($patientId) . "<br>";
+    return $patientId;
         
     // function that return an array of int of patient ID
     // whose ages fulfill requirements
