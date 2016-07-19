@@ -283,7 +283,7 @@ RawBlameHistory     888 lines (793 sloc)  28.1 KB
     // pivot results
     //var_dump($response);
     $results = json_decode($response, true);
-    var_dump( $results);
+    //var_dump( $results);
     
     //echo count($results);
     $patientId = [];

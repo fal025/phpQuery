@@ -898,6 +898,7 @@ $allId = [477974,
             if($temp->type == "!")
             {
                 $temp1 = array_pop($stack1);
+                $result1;
                 switch($temp1->type)
                 {
                     case "Gender":
@@ -955,7 +956,8 @@ $allId = [477974,
             {
                 $temp1 = array_pop($stack1);
                 $temp2 = array_pop($stack1);
-
+                $result1;
+                $result2;
                 if(!is_array($temp1))
                 {
                     switch($temp1->type)
@@ -1138,11 +1140,11 @@ $allId = [477974,
                 break;
         }
     }
-    echo sizeof($temp);
+    //echo sizeof($temp) . "<br>";
     //var_dump($temp);
     //var_dump($allId);
     $result = array_intersect($allId, $temp);
-    echo sizeof($result) . "<br>";
+    //echo sizeof($result) . "<br>";
     //var_dump($result);
     $temp = array_fill(0, 2504, 0);
     //var_dump($temp);
@@ -1151,7 +1153,10 @@ $allId = [477974,
         $tmp = array_search($value, $allId);
         $temp[$tmp] = 1;
     }
+
     $result = $temp;
+
+    echo "<br>the final result is<br>"；
     var_dump($result);
     end:
     echo "<br>";
